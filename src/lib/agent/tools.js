@@ -1,7 +1,7 @@
 import fs from "fs";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { calculateDistance } from "./utils.js";
+import { calculateDistance, geocodeLocation } from "./utils.js";
 import { queryDocument } from "./rag.js";
 import { PROPERTIES_PATH } from "./config.js";
 
@@ -9,9 +9,25 @@ import { PROPERTIES_PATH } from "./config.js";
 const properties = JSON.parse(fs.readFileSync(PROPERTIES_PATH, "utf-8"));
 
 export const searchProperties = tool(
-  async ({ city, type, minPrice, maxPrice, bedrooms, amenities, minArea, maxArea, nearLat, nearLon }) => {
+  async ({ city, type, minPrice, maxPrice, bedrooms, amenities, minArea, maxArea, nearLat, nearLon, nearPlace, maxDistance }) => {
     let filtered = properties;
+    let resolvedLat = nearLat;
+    let resolvedLon = nearLon;
 
+    // Only filter by distance if explicitly specified by user
+    const distanceLimit = maxDistance || null;
+
+    // Only geocode for nearPlace (nearby/proximity searches)
+    if (nearPlace && (!resolvedLat || !resolvedLon)) {
+      const coords = await geocodeLocation(nearPlace);
+      if (coords) {
+        resolvedLat = coords.lat;
+        resolvedLon = coords.lon;
+        console.log(`📍 Geocoded "${nearPlace}" → ${resolvedLat}, ${resolvedLon}`);
+      }
+    }
+    
+    // City search: just match city name, NO geocoding
     if (city) {
       const lowerCity = city.toLowerCase();
       filtered = filtered.filter((p) =>
@@ -57,15 +73,41 @@ export const searchProperties = tool(
     }
 
     // Nearest property logic
-    if (nearLat && nearLon) {
+    if (resolvedLat && resolvedLon) {
       filtered = filtered.map((p) => ({
         ...p,
-        distance: calculateDistance(nearLat, nearLon, p.latitude, p.longitude),
+        distance: calculateDistance(resolvedLat, resolvedLon, p.latitude, p.longitude),
       }));
+      
+      // Filter by distance if limit is set
+      if (distanceLimit) {
+        filtered = filtered.filter((p) => p.distance <= distanceLimit);
+      }
+      
       filtered.sort((a, b) => a.distance - b.distance);
     }
 
-    return JSON.stringify(filtered.slice(0, 5));
+    // Format results for display
+    const results = filtered.slice(0, 5).map((p) => {
+      const result = {
+        name: p.name,
+        type: p.type,
+        city: p.city,
+        bedrooms: p.bedrooms,
+        "area (sqft)": p.area,
+        "price (₹)": p.price.toLocaleString(),
+        amenities: p.amenities.join(", "),
+      };
+      
+      // Only add distance if it exists
+      if (p.distance !== undefined) {
+        result["Distance"] = `${p.distance.toFixed(1)} km away`;
+      }
+      
+      return result;
+    });
+
+    return JSON.stringify(results);
   },
   {
     name: "search_properties",
@@ -76,11 +118,13 @@ export const searchProperties = tool(
       minPrice: z.number().optional().describe("Minimum price in Rupees"),
       maxPrice: z.number().optional().describe("Maximum price in Rupees"),
       bedrooms: z.number().optional().describe("Minimum number of bedrooms"),
+      maxDistance: z.number().optional().describe("Maximum distance in km for nearby properties (e.g., 3 for 3km radius). Only applied if user specifies."),
       amenities: z.array(z.string()).optional().describe("List of amenities to filter by (e.g., Swimming Pool, Gym, Garden)"),
       minArea: z.number().optional().describe("Minimum area in sqft"),
       maxArea: z.number().optional().describe("Maximum area in sqft"),
       nearLat: z.number().optional().describe("Latitude for nearest property search"),
       nearLon: z.number().optional().describe("Longitude for nearest property search"),
+      nearPlace: z.string().optional().describe("Place name for proximity search, e.g. 'RS Puram'. Will be geocoded automatically."),
     }),
   }
 );

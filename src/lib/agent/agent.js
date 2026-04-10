@@ -10,7 +10,7 @@ const toolNode = new ToolNode(tools);
 
 const model = new ChatOpenAI({
   model: "gpt-3.5-turbo",
-  temperature: 0,
+  temperature: 0.5,
 });
 
 const modelWithTools = model.bindTools(tools);
