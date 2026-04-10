@@ -1,4 +1,5 @@
 import "./globals.css";
+import { ThemeProvider } from "@/lib/ThemeContext";
 
 export const metadata = {
   title: "Real Estate Assistant",
@@ -9,7 +10,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

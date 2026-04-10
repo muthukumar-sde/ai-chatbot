@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, MapPin, Building, Home, Briefcase, User, Bot } from "lucide-react";
+import { Send, MapPin, Building, Home, Briefcase, User, Bot, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/lib/ThemeContext";
 
 export default function ChatWindow() {
+  const { theme, toggleTheme, mounted } = useTheme();
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -44,7 +46,7 @@ export default function ChatWindow() {
         async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-          
+
           setUserLocation({ lat, lon });
           console.log("✅ Location granted:", lat, lon);
 
@@ -109,33 +111,47 @@ export default function ChatWindow() {
     }
   };
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <Building className="text-sky-400" size={32} />
-        <div>
-          <h1>Property Assistant</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-              Real-time Real Estate Expert
-            </p>
-            {locationStatus === "granted" && locationCity && (
-              <span style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', padding: '4px 8px', borderRadius: '4px' }}>
-                <MapPin size={12} /> {locationCity}
-              </span>
-            )}
-            {locationStatus === "denied" && (
-              <span style={{ fontSize: '0.75rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MapPin size={12} /> Location OFF
-              </span>
-            )}
-            {locationStatus === "pending" && (
-              <span style={{ fontSize: '0.75rem', color: '#f59e0b' }}>
-                📍 Getting location...
-              </span>
-            )}
+        <div className="header-left">
+          <Building className="text-sky-400" size={32} />
+          <div className="header-content">
+            <h1>Property Assistant</h1>
+            <div className="header-subtitle">
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                Real-time Real Estate Expert
+              </p>
+              {locationStatus === "granted" && locationCity && (
+                <span className="location-badge granted">
+                  <MapPin size={12} /> {locationCity}
+                </span>
+              )}
+              {locationStatus === "denied" && (
+                <span className="location-badge denied">
+                  <MapPin size={12} /> Location OFF
+                </span>
+              )}
+              {locationStatus === "pending" && (
+                <span className="location-badge pending">
+                  📍 Getting location...
+                </span>
+              )}
+            </div>
           </div>
         </div>
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
       </div>
 
       <div className="messages-list">
