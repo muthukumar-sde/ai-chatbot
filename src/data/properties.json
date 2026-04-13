@@ -9,7 +9,7 @@
     "latitude": 12.9304,
     "longitude": 79.085,
     "price": 4700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1861,
     "areaUnit": "sqft",
     "amenities": [
@@ -29,7 +29,7 @@
     "latitude": 10.7825,
     "longitude": 78.6579,
     "price": 21900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1786,
     "areaUnit": "sqft",
     "amenities": [
@@ -90,7 +90,7 @@
     "latitude": 11.6565,
     "longitude": 78.099,
     "price": 45100000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1345,
     "areaUnit": "sqft",
     "amenities": [
@@ -153,7 +153,7 @@
     "latitude": 10.82,
     "longitude": 78.6901,
     "price": 9500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4229,
     "areaUnit": "sqft",
     "amenities": [
@@ -174,7 +174,7 @@
     "latitude": 10.759,
     "longitude": 79.1467,
     "price": 32200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2993,
     "areaUnit": "sqft",
     "amenities": [
@@ -216,7 +216,7 @@
     "latitude": 9.9558,
     "longitude": 78.1396,
     "price": 10800000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3792,
     "areaUnit": "sqft",
     "amenities": [
@@ -338,7 +338,7 @@
     "latitude": 10.8086,
     "longitude": 78.7329,
     "price": 21200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1905,
     "areaUnit": "sqft",
     "amenities": [
@@ -396,7 +396,7 @@
     "latitude": 9.9614,
     "longitude": 78.1275,
     "price": 37600000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2263,
     "areaUnit": "sqft",
     "amenities": [
@@ -437,7 +437,7 @@
     "latitude": 10.9888,
     "longitude": 76.9492,
     "price": 8600000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4952,
     "areaUnit": "sqft",
     "amenities": [
@@ -480,7 +480,7 @@
     "latitude": 11.3011,
     "longitude": 77.695,
     "price": 23300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1510,
     "areaUnit": "sqft",
     "amenities": [
@@ -500,7 +500,7 @@
     "latitude": 11.6779,
     "longitude": 78.1325,
     "price": 41800000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3094,
     "areaUnit": "sqft",
     "amenities": [
@@ -520,7 +520,7 @@
     "latitude": 11.6513,
     "longitude": 78.117,
     "price": 6400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1228,
     "areaUnit": "sqft",
     "amenities": [
@@ -622,7 +622,7 @@
     "latitude": 12.9655,
     "longitude": 79.1465,
     "price": 12200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1649,
     "areaUnit": "sqft",
     "amenities": [
@@ -644,7 +644,7 @@
     "latitude": 11.0217,
     "longitude": 76.9888,
     "price": 10300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 926,
     "areaUnit": "sqft",
     "amenities": [
@@ -704,7 +704,7 @@
     "latitude": 10.7685,
     "longitude": 79.1146,
     "price": 21900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2458,
     "areaUnit": "sqft",
     "amenities": [
@@ -723,7 +723,7 @@
     "latitude": 11.3121,
     "longitude": 77.7615,
     "price": 44900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4433,
     "areaUnit": "sqft",
     "amenities": [
@@ -743,7 +743,7 @@
     "latitude": 13.1203,
     "longitude": 80.2522,
     "price": 24600000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2319,
     "areaUnit": "sqft",
     "amenities": [
@@ -784,7 +784,7 @@
     "latitude": 13.1242,
     "longitude": 80.2666,
     "price": 46000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1148,
     "areaUnit": "sqft",
     "amenities": [
@@ -889,7 +889,7 @@
     "latitude": 12.9663,
     "longitude": 79.1335,
     "price": 47300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1990,
     "areaUnit": "sqft",
     "amenities": [
@@ -911,7 +911,7 @@
     "latitude": 12.8756,
     "longitude": 79.0872,
     "price": 11000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3578,
     "areaUnit": "sqft",
     "amenities": [
@@ -930,7 +930,7 @@
     "latitude": 11.6253,
     "longitude": 78.1587,
     "price": 38200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4880,
     "areaUnit": "sqft",
     "amenities": [
@@ -949,7 +949,7 @@
     "latitude": 10.8162,
     "longitude": 79.13,
     "price": 10200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1184,
     "areaUnit": "sqft",
     "amenities": [
@@ -990,7 +990,7 @@
     "latitude": 9.9748,
     "longitude": 78.1227,
     "price": 26700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 955,
     "areaUnit": "sqft",
     "amenities": [
@@ -1053,7 +1053,7 @@
     "latitude": 12.9347,
     "longitude": 79.1362,
     "price": 40400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1851,
     "areaUnit": "sqft",
     "amenities": [
@@ -1174,7 +1174,7 @@
     "latitude": 10.8463,
     "longitude": 78.7227,
     "price": 11200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1240,
     "areaUnit": "sqft",
     "amenities": [
@@ -1217,7 +1217,7 @@
     "latitude": 11.3519,
     "longitude": 77.6825,
     "price": 7400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3774,
     "areaUnit": "sqft",
     "amenities": [
@@ -1258,7 +1258,7 @@
     "latitude": 10.8329,
     "longitude": 78.6886,
     "price": 30400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4578,
     "areaUnit": "sqft",
     "amenities": [
@@ -1298,7 +1298,7 @@
     "latitude": 10.7389,
     "longitude": 79.1807,
     "price": 24800000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4727,
     "areaUnit": "sqft",
     "amenities": [
@@ -1317,7 +1317,7 @@
     "latitude": 11.7022,
     "longitude": 78.1792,
     "price": 17400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 824,
     "areaUnit": "sqft",
     "amenities": [
@@ -1338,7 +1338,7 @@
     "latitude": 9.906,
     "longitude": 78.0756,
     "price": 40300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2919,
     "areaUnit": "sqft",
     "amenities": [
@@ -1358,7 +1358,7 @@
     "latitude": 10.8428,
     "longitude": 78.7303,
     "price": 11000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1808,
     "areaUnit": "sqft",
     "amenities": [
@@ -1398,7 +1398,7 @@
     "latitude": 10.7619,
     "longitude": 78.7117,
     "price": 8600000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2801,
     "areaUnit": "sqft",
     "amenities": [
@@ -1457,7 +1457,7 @@
     "latitude": 10.7815,
     "longitude": 78.7228,
     "price": 49000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4657,
     "areaUnit": "sqft",
     "amenities": [
@@ -1498,7 +1498,7 @@
     "latitude": 10.8089,
     "longitude": 78.7086,
     "price": 34900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 756,
     "areaUnit": "sqft",
     "amenities": [
@@ -1540,7 +1540,7 @@
     "latitude": 9.9747,
     "longitude": 78.1348,
     "price": 11100000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4620,
     "areaUnit": "sqft",
     "amenities": [
@@ -1560,7 +1560,7 @@
     "latitude": 10.7808,
     "longitude": 79.1396,
     "price": 33900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3803,
     "areaUnit": "sqft",
     "amenities": [
@@ -1621,7 +1621,7 @@
     "latitude": 13.0557,
     "longitude": 80.2427,
     "price": 7900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1764,
     "areaUnit": "sqft",
     "amenities": [
@@ -1640,7 +1640,7 @@
     "latitude": 11.2981,
     "longitude": 77.7303,
     "price": 41300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4640,
     "areaUnit": "sqft",
     "amenities": [
@@ -1682,7 +1682,7 @@
     "latitude": 13.1187,
     "longitude": 80.2278,
     "price": 7900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 885,
     "areaUnit": "sqft",
     "amenities": [
@@ -1702,7 +1702,7 @@
     "latitude": 10.9898,
     "longitude": 76.9872,
     "price": 21200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1368,
     "areaUnit": "sqft",
     "amenities": [
@@ -1805,7 +1805,7 @@
     "latitude": 11.3007,
     "longitude": 77.7103,
     "price": 9700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3978,
     "areaUnit": "sqft",
     "amenities": [
@@ -1825,7 +1825,7 @@
     "latitude": 11.6567,
     "longitude": 78.1427,
     "price": 42200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4239,
     "areaUnit": "sqft",
     "amenities": [
@@ -1846,7 +1846,7 @@
     "latitude": 11.6872,
     "longitude": 78.1633,
     "price": 20100000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3680,
     "areaUnit": "sqft",
     "amenities": [
@@ -1905,7 +1905,7 @@
     "latitude": 10.8232,
     "longitude": 79.1127,
     "price": 6400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4378,
     "areaUnit": "sqft",
     "amenities": [
@@ -1926,7 +1926,7 @@
     "latitude": 10.756,
     "longitude": 79.1327,
     "price": 30700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2622,
     "areaUnit": "sqft",
     "amenities": [
@@ -1948,7 +1948,7 @@
     "latitude": 10.7972,
     "longitude": 78.6635,
     "price": 46300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4660,
     "areaUnit": "sqft",
     "amenities": [
@@ -1970,7 +1970,7 @@
     "latitude": 10.78,
     "longitude": 78.7279,
     "price": 27700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1785,
     "areaUnit": "sqft",
     "amenities": [
@@ -1991,7 +1991,7 @@
     "latitude": 10.7813,
     "longitude": 79.1739,
     "price": 12800000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3451,
     "areaUnit": "sqft",
     "amenities": [
@@ -2075,7 +2075,7 @@
     "latitude": 11.0509,
     "longitude": 76.9369,
     "price": 24600000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2752,
     "areaUnit": "sqft",
     "amenities": [
@@ -2097,7 +2097,7 @@
     "latitude": 11.6629,
     "longitude": 78.1174,
     "price": 28500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3982,
     "areaUnit": "sqft",
     "amenities": [
@@ -2116,7 +2116,7 @@
     "latitude": 10.7951,
     "longitude": 78.6415,
     "price": 4400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4741,
     "areaUnit": "sqft",
     "amenities": [
@@ -2138,7 +2138,7 @@
     "latitude": 11.0039,
     "longitude": 77.0188,
     "price": 22400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4493,
     "areaUnit": "sqft",
     "amenities": [
@@ -2180,7 +2180,7 @@
     "latitude": 11.3365,
     "longitude": 77.7095,
     "price": 13000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4216,
     "areaUnit": "sqft",
     "amenities": [
@@ -2202,7 +2202,7 @@
     "latitude": 11.0617,
     "longitude": 77.0198,
     "price": 24600000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4550,
     "areaUnit": "sqft",
     "amenities": [
@@ -2263,7 +2263,7 @@
     "latitude": 10.8519,
     "longitude": 78.6935,
     "price": 21400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3562,
     "areaUnit": "sqft",
     "amenities": [
@@ -2507,7 +2507,7 @@
     "latitude": 11.6347,
     "longitude": 78.1676,
     "price": 10700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2624,
     "areaUnit": "sqft",
     "amenities": [
@@ -2526,7 +2526,7 @@
     "latitude": 9.8991,
     "longitude": 78.1094,
     "price": 22400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3492,
     "areaUnit": "sqft",
     "amenities": [
@@ -2545,7 +2545,7 @@
     "latitude": 11.6815,
     "longitude": 78.126,
     "price": 9000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3778,
     "areaUnit": "sqft",
     "amenities": [
@@ -2630,7 +2630,7 @@
     "latitude": 9.8825,
     "longitude": 78.0911,
     "price": 7000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3728,
     "areaUnit": "sqft",
     "amenities": [
@@ -2773,7 +2773,7 @@
     "latitude": 13.1144,
     "longitude": 80.2506,
     "price": 21200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3244,
     "areaUnit": "sqft",
     "amenities": [
@@ -2837,7 +2837,7 @@
     "latitude": 9.8859,
     "longitude": 78.1251,
     "price": 34500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2890,
     "areaUnit": "sqft",
     "amenities": [
@@ -2880,7 +2880,7 @@
     "latitude": 10.8268,
     "longitude": 78.656,
     "price": 22800000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4227,
     "areaUnit": "sqft",
     "amenities": [
@@ -3174,7 +3174,7 @@
     "latitude": 11.0559,
     "longitude": 76.9413,
     "price": 16200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4144,
     "areaUnit": "sqft",
     "amenities": [
@@ -3194,7 +3194,7 @@
     "latitude": 10.991,
     "longitude": 76.9306,
     "price": 8300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3654,
     "areaUnit": "sqft",
     "amenities": [
@@ -3213,7 +3213,7 @@
     "latitude": 10.833,
     "longitude": 78.724,
     "price": 37500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4441,
     "areaUnit": "sqft",
     "amenities": [
@@ -3234,7 +3234,7 @@
     "latitude": 10.7776,
     "longitude": 79.1499,
     "price": 33700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1936,
     "areaUnit": "sqft",
     "amenities": [
@@ -3255,7 +3255,7 @@
     "latitude": 12.882,
     "longitude": 79.1755,
     "price": 5400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4436,
     "areaUnit": "sqft",
     "amenities": [
@@ -3295,7 +3295,7 @@
     "latitude": 12.9476,
     "longitude": 79.1706,
     "price": 17100000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4452,
     "areaUnit": "sqft",
     "amenities": [
@@ -3315,7 +3315,7 @@
     "latitude": 10.9685,
     "longitude": 76.994,
     "price": 9900000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 681,
     "areaUnit": "sqft",
     "amenities": [
@@ -3336,7 +3336,7 @@
     "latitude": 10.9992,
     "longitude": 77.0134,
     "price": 25000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 853,
     "areaUnit": "sqft",
     "amenities": [
@@ -3437,7 +3437,7 @@
     "latitude": 10.7592,
     "longitude": 79.1695,
     "price": 46500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 1185,
     "areaUnit": "sqft",
     "amenities": [
@@ -3497,7 +3497,7 @@
     "latitude": 9.8776,
     "longitude": 78.0891,
     "price": 14400000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2796,
     "areaUnit": "sqft",
     "amenities": [
@@ -3517,7 +3517,7 @@
     "latitude": 11.6471,
     "longitude": 78.1824,
     "price": 25300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 792,
     "areaUnit": "sqft",
     "amenities": [
@@ -3558,7 +3558,7 @@
     "latitude": 12.9306,
     "longitude": 79.1225,
     "price": 9300000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3476,
     "areaUnit": "sqft",
     "amenities": [
@@ -3580,7 +3580,7 @@
     "latitude": 11.7124,
     "longitude": 78.1496,
     "price": 32000000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4992,
     "areaUnit": "sqft",
     "amenities": [
@@ -3599,7 +3599,7 @@
     "latitude": 9.9691,
     "longitude": 78.0813,
     "price": 44500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4119,
     "areaUnit": "sqft",
     "amenities": [
@@ -3639,7 +3639,7 @@
     "latitude": 10.8513,
     "longitude": 78.6621,
     "price": 6500000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 2788,
     "areaUnit": "sqft",
     "amenities": [
@@ -3660,7 +3660,7 @@
     "latitude": 12.8773,
     "longitude": 79.126,
     "price": 40100000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4393,
     "areaUnit": "sqft",
     "amenities": [
@@ -3680,7 +3680,7 @@
     "latitude": 9.9481,
     "longitude": 78.1012,
     "price": 11200000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 4957,
     "areaUnit": "sqft",
     "amenities": [
@@ -3927,7 +3927,7 @@
     "latitude": 9.9154,
     "longitude": 78.0994,
     "price": 31700000,
-    "bedrooms": 0,
+    "bedrooms": 1,
     "area": 3293,
     "areaUnit": "sqft",
     "amenities": [

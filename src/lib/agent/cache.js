@@ -10,7 +10,7 @@ const CACHE_TTL = 1000 * 60 * 30; // 30 mins
 
 // Matching thresholds
 const STRING_THRESHOLD = 0.9;
-const EMBEDDING_THRESHOLD = 0.85;
+const EMBEDDING_THRESHOLD = 0.92;
 
 // Lazy load embeddings (avoid build-time issues)
 let embeddings = null;

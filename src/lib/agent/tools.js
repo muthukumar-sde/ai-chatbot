@@ -1,7 +1,8 @@
 import fs from "fs";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
-import { calculateDistance, geocodeLocation } from "./utils.js";
+import { calculateDistance } from "./utils.js";
+import { geocodePlace } from "@/lib/agent/geocode";
 import { queryDocument } from "./rag.js";
 import { PROPERTIES_PATH } from "./config.js";
 
@@ -9,25 +10,69 @@ import { PROPERTIES_PATH } from "./config.js";
 const properties = JSON.parse(fs.readFileSync(PROPERTIES_PATH, "utf-8"));
 
 export const searchProperties = tool(
-  async ({ city, type, minPrice, maxPrice, bedrooms, amenities, minArea, maxArea, nearLat, nearLon, nearPlace, maxDistance }) => {
+  async (input, config) => {
+
+    // ✅ Clone input (mutable)
+    let params = { ...input };
+
+    // ✅ Get user location from config
+    const userLocation = config?.configurable?.userLocation;
+
+    console.log("mklogs BEFORE:", params);
+
+    /* =========================================================
+       LOCATION PRIORITY LOGIC
+       - If city → remove nearLat/nearLon
+       - Else → use user location
+    ========================================================= */
+    if (params.city) {
+      delete params.nearLat;
+      delete params.nearLon;
+      delete params.nearPlace;
+    } else {
+      if ((!params.nearLat || !params.nearLon) && userLocation) {
+        params.nearLat = userLocation.lat;
+        params.nearLon = userLocation.lon;
+        params.nearPlace = userLocation.city;
+      }
+    }
+
+    console.log("mklogs AFTER:", params);
+
+    /* =========================================================
+       EXTRACT PARAMS
+    ========================================================= */
+    const {
+      city,
+      type,
+      minPrice,
+      maxPrice,
+      bedrooms,
+      amenities,
+      minArea,
+      maxArea,
+      nearLat,
+      nearLon,
+      nearPlace,
+      maxDistance
+    } = params;
+
     let filtered = properties;
     let resolvedLat = nearLat;
     let resolvedLon = nearLon;
-
-    // Only filter by distance if explicitly specified by user
     const distanceLimit = maxDistance || null;
+
 
     // Only geocode for nearPlace (nearby/proximity searches)
     if (nearPlace && (!resolvedLat || !resolvedLon)) {
-      const coords = await geocodeLocation(nearPlace);
+      const coords = await geocodePlace(nearPlace);
       if (coords) {
         resolvedLat = coords.lat;
         resolvedLon = coords.lon;
         console.log(`📍 Geocoded "${nearPlace}" → ${resolvedLat}, ${resolvedLon}`);
       }
     }
-    
-    // City search: just match city name, NO geocoding
+
     if (city) {
       const lowerCity = city.toLowerCase();
       filtered = filtered.filter((p) =>
@@ -44,7 +89,7 @@ export const searchProperties = tool(
     }
 
     if (bedrooms !== undefined) {
-      filtered = filtered.filter((p) => p.bedrooms >= bedrooms);
+      filtered = filtered.filter((p) => p.bedrooms === bedrooms);
     }
 
     if (minPrice !== undefined) {
@@ -72,38 +117,34 @@ export const searchProperties = tool(
       );
     }
 
-    // Nearest property logic
-    if (resolvedLat && resolvedLon) {
+    const isProximitySearch = !!(nearPlace || (nearLat && nearLon));
+
+    if (isProximitySearch && resolvedLat && resolvedLon) {
       filtered = filtered.map((p) => ({
         ...p,
         distance: calculateDistance(resolvedLat, resolvedLon, p.latitude, p.longitude),
       }));
-      
-      // Filter by distance if limit is set
       if (distanceLimit) {
         filtered = filtered.filter((p) => p.distance <= distanceLimit);
       }
-      
       filtered.sort((a, b) => a.distance - b.distance);
     }
-
-    // Format results for display
+    console.log(`mklogs filtered down to ${filtered.length} properties after applying all filters.`);
     const results = filtered.slice(0, 5).map((p) => {
       const result = {
-        name: p.name,
+        name: p.propertyName,
+        slug: p.slug,
         type: p.type,
+        location: p.location,
         city: p.city,
         bedrooms: p.bedrooms,
         "area (sqft)": p.area,
-        "price (₹)": p.price.toLocaleString(),
-        amenities: p.amenities.join(", "),
+        "price (₹)": p.price,
+        amenities: p.amenities.join(", ")
       };
-      
-      // Only add distance if it exists
-      if (p.distance !== undefined) {
-        result["Distance"] = `${p.distance.toFixed(1)} km away`;
+      if (isProximitySearch && p.distance !== undefined) {
+        result["distance"] = `${p.distance.toFixed(1)} km away`;
       }
-      
       return result;
     });
 
@@ -125,11 +166,11 @@ export const searchProperties = tool(
       nearLat: z.number().optional().describe("Latitude for nearest property search"),
       nearLon: z.number().optional().describe("Longitude for nearest property search"),
       nearPlace: z.string().optional().describe("Place name for proximity search, e.g. 'RS Puram'. Will be geocoded automatically."),
+      userLocation: z.string().optional().describe("user's current location"),
     }),
   }
 );
 
-// Define the knowledge base tool
 export const queryKnowledgeBase = tool(
   async ({ query }) => {
     return await queryDocument(query);

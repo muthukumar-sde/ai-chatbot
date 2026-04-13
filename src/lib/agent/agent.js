@@ -3,27 +3,29 @@ import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
 import { searchProperties, queryKnowledgeBase } from "./tools.js";
-import { systemPrompt } from "./config.js";
+import { buildChatPrompt } from "./prompts.js";
 
 const tools = [searchProperties, queryKnowledgeBase];
 const toolNode = new ToolNode(tools);
 
 const model = new ChatOpenAI({
-  model: "gpt-3.5-turbo",
+  model: "gpt-4o-mini",
   temperature: 0.5,
 });
 
 const modelWithTools = model.bindTools(tools);
 
+// Build the prompt once at startup (full prompt by default)
+const chatPrompt = buildChatPrompt();
+
 // Define the function that calls the model
 async function callModel(state) {
   const { messages } = state;
-
-  const response = await modelWithTools.invoke([
-    { role: "system", content: systemPrompt },
-    ...messages,
-  ]);
-
+ 
+  // Pipe the prompt template into the model
+  const chain = chatPrompt.pipe(modelWithTools);
+  const response = await chain.invoke({ messages });
+ 
   return { messages: [response] };
 }
 

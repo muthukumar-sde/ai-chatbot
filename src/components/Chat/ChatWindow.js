@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Send, MapPin, Building, Home, Briefcase, User, Bot, Moon, Sun } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { useTheme } from "@/lib/ThemeContext";
+import { reverseGeocode } from "@/lib/agent/geocode";
+import remarkGfm from "remark-gfm";
 
 export default function ChatWindow() {
   const { theme, toggleTheme, mounted } = useTheme();
@@ -46,24 +49,12 @@ export default function ChatWindow() {
         async (position) => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
-
-          setUserLocation({ lat, lon });
+          const placeName = await reverseGeocode(lat, lon);
+          setUserLocation({ lat, lon, city: placeName });
           console.log("✅ Location granted:", lat, lon);
+          // Reverse geocode to get city name (consistent headers)
 
-          // Reverse geocode to get city name
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-            );
-            const data = await response.json();
-            const city = data.address?.city || data.address?.town || data.address?.village || "Unknown";
-            setLocationCity(city);
-            console.log("📍 City detected:", city);
-          } catch (error) {
-            console.warn("⚠️ Could not reverse geocode:", error.message);
-            setLocationCity("Location detected");
-          }
-
+          setLocationCity(placeName || "Location detected");
           setLocationStatus("granted");
         },
         (error) => {
@@ -161,7 +152,25 @@ export default function ChatWindow() {
               {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
               <span>{msg.role === 'user' ? 'You' : 'Assistant'}</span>
             </div>
-            <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                table: ({ node, ...props }) => (
+                  <div style={{ overflowX: "auto", margin: "8px 0" }}>
+                    <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.85rem" }} {...props} />
+                  </div>
+                ),
+                th: ({ node, ...props }) => (
+                  <th style={{ border: "1px solid var(--border-color, #444)", padding: "8px 12px", background: "var(--table-header-bg, #1e293b)", color: "#ffffff", textAlign: "left", whiteSpace: "nowrap" }} {...props} />
+                ),
+                td: ({ node, ...props }) => (
+                  <td style={{ border: "1px solid var(--border-color, #444)", padding: "7px 12px", color: "var(--text-primary, #cbd5e1)" }} {...props} />
+                ),
+                tr: ({ node, ...props }) => (
+                  <tr style={{ background: "var(--table-row-bg, transparent)" }} {...props} />
+                ),
+              }}
+            >{msg.content}</ReactMarkdown>
           </div>
         ))}
         {loading && (
