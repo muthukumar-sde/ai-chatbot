@@ -21,6 +21,7 @@ export default function ChatWindow() {
   const [locationCity, setLocationCity] = useState(""); // Display city name
   const [locationStatus, setLocationStatus] = useState(""); // "granted", "denied", "pending"
   const [threadId, setThreadId] = useState(null);
+  const [userMemory, setUserMemory] = useState({});
   const messagesEndRef = useRef(null);
 
   // ✅ Initialize thread ID only in browser (after mount)
@@ -31,6 +32,16 @@ export default function ChatWindow() {
       sessionStorage.setItem("thread_id", id);
     }
     setThreadId(id);
+
+    // Initialize user memory from session
+    const memoryCache = sessionStorage.getItem("userMemory");
+    if (memoryCache) {
+      try {
+        setUserMemory(JSON.parse(memoryCache));
+      } catch (e) {
+        console.error("Failed to parse user session memory", e);
+      }
+    }
   }, []);
 
   const scrollToBottom = () => {
@@ -84,11 +95,17 @@ export default function ChatWindow() {
           messages: [...messages, userMsg],
           userLocation,
           threadId, // Send thread ID to maintain conversation context
+          userMemory, // Send frontend session memory
         }),
       });
 
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+
+      if (data.userMemory) {
+        setUserMemory(data.userMemory);
+        sessionStorage.setItem("userMemory", JSON.stringify(data.userMemory));
+      }
 
       setMessages((prev) => [...prev, data]);
     } catch (error) {
@@ -174,8 +191,13 @@ export default function ChatWindow() {
           </div>
         ))}
         {loading && (
-          <div className="message assistant" style={{ fontStyle: 'italic' }}>
-            Searching...
+          <div className="message assistant" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontStyle: 'italic', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Searching</span>
+            <div className="typing-indicator">
+              <div className="typing-dot"></div>
+              <div className="typing-dot"></div>
+              <div className="typing-dot"></div>
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -187,7 +209,7 @@ export default function ChatWindow() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSend()}
-          placeholder="e.g., Show me 3BHK houses in Coimbatore"
+          placeholder="e.g., Show me 1BHK houses in Coimbatore"
           disabled={loading}
         />
         <button className="send-button" onClick={handleSend} disabled={loading || !input.trim()}>

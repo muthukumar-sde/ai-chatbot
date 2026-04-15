@@ -1,15 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { app as agent } from "@/lib/agent";
-import { reverseGeocode } from "@/lib/agent/geocode";
-import { HumanMessage } from "@langchain/core/messages";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { checkSemanticCache, addToSemanticCache, isContextDependent } from "@/lib/agent/cache";
+import {
+  extractProfileFromText,
+  extractStandaloneNameReply,
+} from "@/lib/agent/userMemory";
+
+function assistantAskedForName(messages) {
+  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+  if (!lastAssistant?.content) return false;
+  const text = String(lastAssistant.content).toLowerCase();
+  return /may i know your name|your name\?|name please|name first/.test(text);
+}
 
 export async function POST(req) {
   try {
-    const { messages, userLocation, threadId } = await req.json();
+    const { messages, userLocation, threadId, userMemory = {} } = await req.json();
     console.log("mklogs API received messages:", userLocation);
     const lastUserMsg = messages.filter((m) => m.role === "user").pop();
     const content = lastUserMsg?.content?.trim() || "";
+    const stableThreadId = threadId ?? "fallback-session";
 
     // ✅ Skip cache + LLM for empty input
     if (!content) {
@@ -26,7 +37,7 @@ export async function POST(req) {
       if (userLocation?.city) {
         return NextResponse.json({
           role: "assistant",
-          content: `📍 **${userLocation?.city}** — Your current location is in ${city}. How can I help you find properties here?`
+          content: `📍 **${userLocation?.city}** — Your current location is in ${userLocation?.city}. How can I help you find properties here?`
         });
       } else {
         return NextResponse.json({
@@ -42,39 +53,51 @@ export async function POST(req) {
     //   if (cached) return NextResponse.json(cached);
     // }
 
-    // ✅ Only append coordinates for proximity queries
-    const proximityKeywords = ["near me", "nearby", "closest", "nearest", "around me", "my location", "my area"];
-    const isProximityQuery = proximityKeywords.some(kw => content.toLowerCase().includes(kw));
+    const runtimeContextBlocks = [];
+    const extracted = extractProfileFromText(content);
+    if (!extracted.name && assistantAskedForName(messages)) {
+      extracted.name = extractStandaloneNameReply(content);
+    }
 
-    let contentForAgent = content;
+    const updatedMemory = { ...userMemory };
+    for (const [key, value] of Object.entries(extracted)) {
+      if (value) {
+        updatedMemory[key] = value;
+      }
+    }
+
+    const hasMemory = Object.keys(updatedMemory).length > 0;
+
+    if (hasMemory) {
+      runtimeContextBlocks.push(`USER MEMORY PROFILE:
+- userName: ${updatedMemory.name || "unknown"}
+- userEmail: ${updatedMemory.email || "unknown"}
+- preferredSearchType: ${updatedMemory.search_type || "unknown"}
+- preferredDepartment: ${updatedMemory.department || "unknown"}
+
+MEMORY INSTRUCTION:
+- If a field is known above, do not ask for it again.
+- Reuse known preferences unless user explicitly changes them.`);
+    }
     if (userLocation) {
-      const city = await reverseGeocode(userLocation.lat, userLocation.lon);
-      // if (isProximityQuery) {
-      contentForAgent += ` 
-        USER CONTEXT:
-        - currentUserLocation: ${userLocation.city || "Unknown"}
-        - nearLat: ${userLocation.lat}
-        - nearLon: ${userLocation.lon}
+      runtimeContextBlocks.push(`USER CONTEXT:
+- currentUserLocation: ${userLocation.city || "Unknown"}
+- nearLat: ${userLocation.lat}
+- nearLon: ${userLocation.lon}
 
-        INSTRUCTION:
-        - If user says "near me", "nearby", or does not specify a location:
-          → MUST set:
-            nearLat = ${userLocation.lat}
-            nearLon = ${userLocation.lon}
-            nearPlace = "${userLocation.city || "Unknown"}"
-
-        - Only set 'city' if user explicitly mentions a city
-        `;
-
-      // } else {
-      //   contentForAgent += `\n\n(User's city: ${city || "Unknown"}. Do NOT pass coordinates to the search tool.)`;
-      // }
+INSTRUCTION:
+- If user says "near me", "nearby", or does not specify a location:
+  -> MUST set:
+    nearLat = ${userLocation.lat}
+    nearLon = ${userLocation.lon}
+    nearPlace = "${userLocation.city || "Unknown"}"
+- Only set 'city' if user explicitly mentions a city`);
     }
 
     // ✅ Run agent
     const config = {
       configurable: {
-        thread_id: threadId ?? "fallback-session",
+        thread_id: stableThreadId,
         userLocation: userLocation
           ? {
             lat: userLocation.lat,
@@ -84,13 +107,16 @@ export async function POST(req) {
           : null,
       }
     };
-    const result = await agent.invoke(
-      { messages: [new HumanMessage(contentForAgent)] },
-      config
-    );
+    const messagesForAgent = [];
+    if (runtimeContextBlocks.length > 0) {
+      messagesForAgent.push(new SystemMessage(runtimeContextBlocks.join("\n\n")));
+    }
+    messagesForAgent.push(new HumanMessage(content));
+
+    const result = await agent.invoke({ messages: messagesForAgent }, config);
 
     const lastMessage = result.messages[result.messages.length - 1];
-    const response = { role: "assistant", content: lastMessage.content };
+    const response = { role: "assistant", content: lastMessage.content, userMemory: updatedMemory };
 
     // ✅ Cache original content (not location-appended version)
     if (!isContextDependent(content)) {
