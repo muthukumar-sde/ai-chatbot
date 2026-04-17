@@ -4,8 +4,6 @@ const INVALID_NAME_TOKENS = new Set([
   "hey",
   "buy",
   "rent",
-  "residential",
-  "commercial",
   "any budget",
   "visit",
   "tomorrow",
@@ -61,11 +59,6 @@ function extractSearchType(text) {
   return undefined;
 }
 
-function extractDepartment(text) {
-  if (/\bcommercial|office|shop|showroom\b/i.test(text)) return "commercial";
-  if (/\bresidential|house|apartment|villa|flat|plot\b/i.test(text)) return "residential";
-  return undefined;
-}
 
 export function extractProfileFromText(text) {
   if (!text) return {};
@@ -75,6 +68,5 @@ export function extractProfileFromText(text) {
     name: extractName(text),
     email: emailMatch?.[0]?.toLowerCase(),
     search_type: extractSearchType(text),
-    department: extractDepartment(text),
   };
 }

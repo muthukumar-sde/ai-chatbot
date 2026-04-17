@@ -2,10 +2,10 @@ import { ChatOpenAI } from "@langchain/openai";
 import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
-import { searchProperties, queryKnowledgeBase } from "./tools.js";
+import { searchProperties, queryKnowledgeBase, searchNearbyAmenities } from "./tools.js";
 import { buildChatPrompt } from "./prompts.js";
 
-const tools = [searchProperties, queryKnowledgeBase];
+const tools = [searchProperties, queryKnowledgeBase, searchNearbyAmenities];
 const toolNode = new ToolNode(tools);
 
 const model = new ChatOpenAI({
@@ -21,11 +21,11 @@ const chatPrompt = buildChatPrompt();
 // Define the function that calls the model
 async function callModel(state) {
   const { messages } = state;
- 
+
   // Pipe the prompt template into the model
   const chain = chatPrompt.pipe(modelWithTools);
   const response = await chain.invoke({ messages });
- 
+
   return { messages: [response] };
 }
 

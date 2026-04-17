@@ -73,7 +73,6 @@ export async function POST(req) {
 - userName: ${updatedMemory.name || "unknown"}
 - userEmail: ${updatedMemory.email || "unknown"}
 - preferredSearchType: ${updatedMemory.search_type || "unknown"}
-- preferredDepartment: ${updatedMemory.department || "unknown"}
 
 MEMORY INSTRUCTION:
 - If a field is known above, do not ask for it again.
