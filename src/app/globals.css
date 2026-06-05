@@ -341,6 +341,7 @@ main {
   padding: 1rem;
   border-top: 1px solid var(--glass-border);
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   transition: border-color 0.3s ease;
 }
@@ -473,4 +474,244 @@ main {
   40% {
     transform: scale(1);
   }
+}
+
+.mic-button {
+  transition: all 0.2s ease;
+}
+
+.mic-button:hover {
+  transform: scale(1.1);
+}
+
+.mic-button:active {
+  transform: scale(0.95);
+}
+
+.mic-button.recording {
+  animation: pulse-recording 1.5s infinite;
+}
+
+@keyframes pulse-recording {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    border-radius: 50%;
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    border-radius: 50%;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    border-radius: 50%;
+  }
+}
+
+.recording-wave .wave-bar {
+  width: 4px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
+  animation: wave-bounce 1s infinite ease-in-out;
+}
+
+.recording-wave .wave-bar:nth-child(1) { height: 10px; animation-delay: -0.4s; }
+.recording-wave .wave-bar:nth-child(2) { height: 16px; animation-delay: -0.2s; }
+.recording-wave .wave-bar:nth-child(3) { height: 24px; animation-delay: 0s; }
+.recording-wave .wave-bar:nth-child(4) { height: 16px; animation-delay: -0.2s; }
+.recording-wave .wave-bar:nth-child(5) { height: 10px; animation-delay: -0.4s; }
+
+@keyframes wave-bounce {
+  0%, 100% {
+    transform: scaleY(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.rec-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.rec-btn.cancel {
+  color: var(--location-denied-color, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
+}
+.rec-btn.cancel:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+
+.rec-btn.confirm {
+  color: var(--location-granted-color, #10b981);
+  background: rgba(16, 185, 129, 0.1);
+}
+.rec-btn.confirm:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: scale(1.1);
+}
+
+/* Premium Recording Overlay */
+.recording-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  animation: slideInRecording 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 44px;
+}
+@keyframes slideInRecording {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.recording-overlay-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recording-pulse-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.recording-text {
+  font-weight: 600;
+  color: #ef4444;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.recording-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-cancel-recording, .btn-send-recording {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-recording {
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-secondary);
+}
+.btn-cancel-recording:hover {
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--text-primary);
+}
+
+.btn-send-recording {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+.btn-send-recording:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* Recording Inline States */
+.mic-button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+}
+.mic-button:hover {
+  background: rgba(148, 163, 184, 0.1);
+}
+.mic-button.is-recording {
+  color: var(--location-denied-color, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
+  animation: pulse-recording 1.5s infinite;
+}
+.mic-button.is-recording:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.chat-input {
+  width: 100%;
+}
+.chat-input.is-recording {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.02);
+}
+
+.integrated-wave {
+  position: absolute;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  height: 20px;
+}
+.integrated-wave .wave-bar {
+  background-color: var(--location-denied-color, #ef4444);
+  width: 3px;
+  border-radius: 2px;
+  animation: wave-bounce 1s infinite ease-in-out;
+}
+.integrated-wave .wave-bar:nth-child(1) { animation-delay: -0.4s; height: 10px; }
+.integrated-wave .wave-bar:nth-child(2) { animation-delay: -0.2s; height: 16px; }
+.integrated-wave .wave-bar:nth-child(3) { animation-delay: 0s; height: 20px; }
+.integrated-wave .wave-bar:nth-child(4) { animation-delay: -0.2s; height: 16px; }
+.integrated-wave .wave-bar:nth-child(5) { animation-delay: -0.4s; height: 10px; }
+
+.send-button.is-recording {
+  background: var(--location-denied-color, #ef4444);
+}
+.send-button.is-recording:hover:not(:disabled) {
+  background: #dc2626;
 }

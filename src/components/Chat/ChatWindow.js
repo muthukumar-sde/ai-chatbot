@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, MapPin, Building, Home, Briefcase, User, Bot, Moon, Sun } from "lucide-react";
+import { Send, MapPin, Building, Home, Briefcase, User, Bot, Moon, Sun, Mic, Square, Check, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useTheme } from "@/lib/ThemeContext";
 import { reverseGeocode } from "@/lib/agent/geocode";
@@ -22,7 +22,22 @@ export default function ChatWindow() {
   const [locationStatus, setLocationStatus] = useState(""); // "granted", "denied", "pending"
   const [threadId, setThreadId] = useState(null);
   const [userMemory, setUserMemory] = useState({});
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const isCancelledRef = useRef(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef("");
+
+  useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
+
+  const handleSend = () => {
+    if (input.trim()) {
+      submitMessage(input);
+    }
+  };
 
   // ✅ Initialize thread ID only in browser (after mount)
   useEffect(() => {
@@ -43,6 +58,85 @@ export default function ChatWindow() {
       }
     }
   }, []);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        audioChunksRef.current = [];
+        
+        stream.getTracks().forEach(track => track.stop());
+        setIsRecording(false);
+        
+        if (isCancelledRef.current) {
+          return; // Discard audio
+        }
+        
+        setLoading(true);
+        let transcriptionSuccess = false;
+        let transcribedText = "";
+
+        try {
+          const formData = new FormData();
+          formData.append("file", audioBlob, "recording.webm");
+          
+          const response = await fetch("/api/voice", {
+            method: "POST",
+            body: formData,
+          });
+          
+          const data = await response.json();
+          if (data.text) {
+            transcribedText = data.text;
+            transcriptionSuccess = true;
+          } else if (data.error) {
+            console.error("Transcription error:", data.error);
+          }
+        } catch (err) {
+          console.error("Error sending audio to API:", err);
+        }
+
+        if (transcriptionSuccess) {
+          const finalText = inputRef.current ? inputRef.current + " " + transcribedText : transcribedText;
+          setInput(finalText);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const cancelRecording = () => {
+    isCancelledRef.current = true;
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  const confirmRecording = () => {
+    isCancelledRef.current = false;
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -79,10 +173,13 @@ export default function ChatWindow() {
     }
   }, []);
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  const submitMessage = async (textToSubmit) => {
+    if (!textToSubmit.trim()) {
+      setLoading(false);
+      return;
+    }
 
-    const userMsg = { role: "user", content: input };
+    const userMsg = { role: "user", content: textToSubmit };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
@@ -204,16 +301,42 @@ export default function ChatWindow() {
       </div>
 
       <div className="input-area">
-        <input
-          className="chat-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && handleSend()}
-          placeholder="e.g., Show me 1BHK houses in Coimbatore"
-          disabled={loading}
-        />
-        <button className="send-button" onClick={handleSend} disabled={loading || !input.trim()}>
-          <Send size={20} />
+        <button
+          className={`mic-button ${isRecording ? 'is-recording' : ''}`}
+          onClick={isRecording ? cancelRecording : startRecording}
+          disabled={loading && !isRecording}
+          title={isRecording ? "Cancel recording" : "Start recording"}
+        >
+          {isRecording ? <X size={20} /> : <Mic size={20} />}
+        </button>
+        
+        <div className="input-wrapper">
+          <input
+            className={`chat-input ${isRecording ? 'is-recording' : ''}`}
+            value={isRecording ? "" : input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && !isRecording && handleSend()}
+            placeholder={isRecording ? "Listening..." : "e.g., Show me 1BHK houses in Coimbatore"}
+            disabled={loading || isRecording}
+          />
+          {isRecording && (
+            <div className="integrated-wave">
+                <div className="wave-bar"></div>
+                <div className="wave-bar"></div>
+                <div className="wave-bar"></div>
+                <div className="wave-bar"></div>
+                <div className="wave-bar"></div>
+            </div>
+          )}
+        </div>
+
+        <button 
+          className={`send-button ${isRecording ? 'is-recording' : ''}`}
+          onClick={isRecording ? confirmRecording : handleSend} 
+          disabled={(loading && !isRecording) || (!isRecording && !input.trim())}
+          title={isRecording ? "Stop & Send" : "Send message"}
+        >
+          {isRecording ? <Check size={20} /> : <Send size={20} />}
         </button>
       </div>
     </div>
