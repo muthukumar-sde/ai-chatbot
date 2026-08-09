@@ -50,9 +50,9 @@ class SimpleMemoryVectorStore {
 // ---------------------------------------------------------------------------
 let vectorStore = null;
 
-export async function initializeVectorStore() {
+export async function initializeVectorStore(forceReload = false) {
   try {
-    if (vectorStore) return vectorStore;
+    if (vectorStore && !forceReload) return vectorStore;
 
     console.log("📄 Checking PDF path:", PDF_PATH);
 

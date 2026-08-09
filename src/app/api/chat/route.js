@@ -6,6 +6,7 @@ import {
   extractProfileFromText,
   extractStandaloneNameReply,
 } from "@/lib/agent/userMemory";
+import { prisma } from "@/lib/prisma.js";
 
 function assistantAskedForName(messages) {
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
@@ -32,8 +33,6 @@ export async function POST(req) {
     const isLocationQuery = locationKeywords.some(kw => content.toLowerCase().includes(kw));
 
     if (isLocationQuery && userLocation) {
-      // const city = await reverseGeocode(userLocation.lat, userLocation.lon);
-
       if (userLocation?.city) {
         return NextResponse.json({
           role: "assistant",
@@ -46,12 +45,6 @@ export async function POST(req) {
         });
       }
     }
-
-    // ✅ Semantic cache check
-    // if (!isContextDependent(content)) {
-    //   const cached = await checkSemanticCache(content);
-    //   if (cached) return NextResponse.json(cached);
-    // }
 
     const runtimeContextBlocks = [];
     const extracted = extractProfileFromText(content);
@@ -66,16 +59,42 @@ export async function POST(req) {
       }
     }
 
+    // Persist memory into Prisma DB
+    if (Object.keys(updatedMemory).length > 0 && stableThreadId) {
+      try {
+        await prisma.userMemory.upsert({
+          where: { threadId: stableThreadId },
+          update: {
+            name: updatedMemory.name || undefined,
+            email: updatedMemory.email || undefined,
+            phone: updatedMemory.phone || undefined,
+            searchType: updatedMemory.search_type || undefined,
+          },
+          create: {
+            threadId: stableThreadId,
+            name: updatedMemory.name,
+            email: updatedMemory.email,
+            phone: updatedMemory.phone,
+            searchType: updatedMemory.search_type,
+          },
+        });
+      } catch (e) {
+        console.warn("Prisma UserMemory upsert warning:", e.message);
+      }
+    }
+
     const hasMemory = Object.keys(updatedMemory).length > 0;
 
     if (hasMemory) {
       runtimeContextBlocks.push(`USER MEMORY PROFILE:
 - userName: ${updatedMemory.name || "unknown"}
 - userEmail: ${updatedMemory.email || "unknown"}
+- userPhone: ${updatedMemory.phone || "unknown"}
 - preferredSearchType: ${updatedMemory.search_type || "unknown"}
 
 MEMORY INSTRUCTION:
-- If a field is known above, do not ask for it again.
+- If a profile field is known above, do not ask for it again.
+- Address the user by their userName naturally when known.
 - Reuse known preferences unless user explicitly changes them.`);
     }
     if (userLocation) {

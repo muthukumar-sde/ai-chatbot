@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Property {
+  id           String      @id
+  propertyName String
+  slug         String      @unique
+  type         String
+  location     String
+  city         String
+  latitude     Float
+  longitude    Float
+  price        Float
+  bedrooms     Int?
+  area         Float
+  areaUnit     String      @default("sqft")
+  amenities    String
+  searchType   String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  favorites    Favorite[]
+  siteVisits   SiteVisit[]
+}
+
+model UserMemory {
+  id         String   @id @default(uuid())
+  threadId   String   @unique
+  name       String?
+  email      String?
+  phone      String?
+  searchType String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  threadId   String
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, propertyId])
+}
+
+model SiteVisit {
+  id         String   @id @default(uuid())
+  propertyId String
+  userName   String
+  userEmail  String?
+  userPhone  String?
+  visitDate  String
+  visitTime  String
+  status     String   @default("CONFIRMED")
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}

@@ -2,15 +2,16 @@ import { ChatOpenAI } from "@langchain/openai";
 import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
-import { searchProperties, queryKnowledgeBase, searchNearbyAmenities } from "./tools.js";
+import { searchProperties, queryKnowledgeBase, searchNearbyAmenities, saveFavoriteProperty } from "./tools.js";
 import { buildChatPrompt } from "./prompts.js";
 
-const tools = [searchProperties, queryKnowledgeBase, searchNearbyAmenities];
+const tools = [searchProperties, queryKnowledgeBase, searchNearbyAmenities, saveFavoriteProperty];
 const toolNode = new ToolNode(tools);
 
 const model = new ChatOpenAI({
-  model: "gpt-4o-mini",
-  temperature: 0.5,
+  modelName: process.env.OPENAI_MODEL || "gpt-4o-mini",
+  maxTokens: 850,
+  timeout: 15000,
 });
 
 const modelWithTools = model.bindTools(tools);

@@ -1,207 +1,148 @@
 <div align="center">
 
-# 🤖 AI Chatbot
+# 🏡 MK Properties — AI Real Estate Assistant
 
-**A production-ready AI chatbot built with Next.js, LangChain, and LangGraph.**  
-Multi-model support · PDF RAG · Agentic workflows · Streaming responses
+**Next-Generation AI Real Estate Conversational Platform**  
+Natural Language Property Search · Tanglish Query Parsing · Prisma DB Persistence · Interactive Site Visit Bookings · RAG Document Intelligence · Adaptive Mobile/Desktop Responsive UI
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.3-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
-[![LangChain](https://img.shields.io/badge/LangChain-1.3.1-1C3C3C?style=flat-square&logo=langchain)](https://langchain.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38BDF8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/your-username/ai-chatbot/pulls)
+[![LangChain](https://img.shields.io/badge/LangChain-1.3-1C3C3C?style=flat-square&logo=langchain)](https://langchain.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-SQLite-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=flat-square&logo=openai)](https://openai.com/)
 
 </div>
 
 ---
 
-## ✨ Features
+## ✨ Highlights & Key Features
 
-- **Chat UI** — Responsive, streaming chat interface using Next.js App Router
-- **Multi-model** — Switch between Anthropic Claude and OpenAI GPT models
-- **LangGraph agents** — Stateful, tool-using agentic workflows
-- **PDF RAG** — Upload and query documents with Retrieval-Augmented Generation
-- **Modular tools** — Easily extend with custom tools (search, APIs, etc.)
-- **Tailwind CSS v4** — Fast, utility-first styling
+### 🔍 1. Natural Language & Tanglish Search Engine
+Understands natural conversational prompts in English, Tamil, and Tanglish:
+- *“Coimbatore la 60 lakhs kulla 2BHK venum, school pakkathula.”*
+- Converts queries into structured database filters (`city`, `maxPrice`, `bedrooms`, `amenities`, `search_type`).
+
+### 📅 2. Interactive Site Visit Booking Popup Modal
+- One-click `📅 Book Visit` button on every property card opens a pre-filled interactive modal form.
+- Captures visitor details, preferred date, and time slots into SQLite `SiteVisit` database via `POST /api/site-visits`.
+
+### 💾 3. Persistent Favorites & Session Memory
+- Persistent chat memory across browser reloads via `localStorage`.
+- Heart `❤️` favorite toggles saved directly to Prisma `Favorite` table.
+- Slide-over **Saved Favorites Drawer** displaying bookmarked listings.
+
+### 📚 4. RAG Knowledge Base (`RealEstates.pdf`)
+- Integrated PDF vector search covering legal verification guidelines, RERA regulations, home loan interest rates (8.35% - 8.75%), and Tamil Nadu property registration fees (9%).
+
+### 🎨 5. Adaptive Mobile & Desktop Responsive Header System
+- **Desktop View (`> 640px`)**: Single-line executive compact bar with brand gradient, inline AI badges, and actions.
+- **Mobile View (`<= 640px`)**: 2-Row Status Ribbon system preventing text crowding, overlaps, and single-word line breaks.
+
+### 🎙️ 6. Speech Synthesis & Voice Recording Studio
+- Integrated Text-to-Speech (TTS) for AI voice responses.
+- Studio audio recording studio animation for hands-free search prompts.
 
 ---
 
-## 📦 Tech Stack
+## 📦 Tech Stack & Architecture
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16.2.3, React 19 |
-| AI Orchestration | LangChain 1.3, LangGraph 1.2 |
-| LLM Providers | Anthropic (Claude), OpenAI (GPT) |
-| Document Processing | pdf-parse, LangChain Text Splitters |
-| Styling | Tailwind CSS v4, Lucide React |
-| Linting | ESLint 9 |
+| **Framework** | Next.js 16.2.3 (App Router), React 19 |
+| **Database & ORM** | SQLite (`prisma/dev.db`), Prisma ORM |
+| **AI Agent Orchestration** | LangChain 1.3, OpenAI GPT-4o-mini |
+| **RAG Vector Search** | MemoryVectorStore, OpenAI Embeddings, PDFKit |
+| **Icons & Design System** | Lucide React, Glassmorphism, CSS Custom Properties |
+| **PDF Generation** | PDFKit |
 
 ---
 
-## 📁 Project Structure
+## 📁 Codebase Directory Overview
 
 ```
 ai-chatbot/
-├── app/
-│   ├── api/
-│   │   └── chat/          # Streaming LLM API route
-│   └── page.tsx           # Main chat UI
-├── components/            # Reusable React components
-├── lib/
-│   ├── agent/             # LangGraph agent definition
-│   ├── tools/             # Custom LangChain tools
-│   └── rag/               # PDF ingestion & vector store
-├── public/                # Static assets
-├── .env.local             # Environment variables (not committed)
-└── package.json
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── chat/          # Streaming agent endpoint (Tanglish parsing + RAG)
+│   │   │   ├── site-visits/   # Site visit booking API
+│   │   │   └── favorites/     # Prisma favorite toggle API
+│   │   ├── globals.css        # Core design system & responsive UI rules
+│   │   └── page.js            # Main application shell
+│   ├── components/Chat/
+│   │   ├── ChatWindow.js      # Main state orchestration container
+│   │   ├── ChatHeader.jsx     # Responsive Desktop & Mobile header views
+│   │   ├── MessageList.jsx    # Chat message stream & Markdown property card renderer
+│   │   ├── ChatInput.jsx      # Input bar & voice studio recording animation
+│   │   ├── QuickSuggestions.jsx # Quick filter suggestion chips
+│   │   ├── BookingModal.jsx   # Interactive site visit booking form modal
+│   │   └── FavoritesModal.jsx # Saved favorites drawer modal
+│   ├── lib/
+│   │   ├── agent/             # LangChain agent, prompt templates, & tools
+│   │   └── ThemeContext.js    # Dark/Light theme state provider
+│   └── data/
+│       └── properties.json    # Seed dataset (32+ listings in Chennai, Coimbatore, Madurai)
+├── prisma/
+│   ├── schema.prisma          # Database schema (Property, UserMemory, Favorite, SiteVisit)
+│   └── seed.js                # Database seeding script
+├── public/
+│   └── RealEstates.pdf        # Production real estate RAG knowledge base PDF
+└── scripts/
+    └── generate_pdf.js        # PDFKit script generating RealEstates.pdf
 ```
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Quick Start & Local Setup
 
 ### Prerequisites
-
 - **Node.js** v18+
 - **npm** v9+
-- API key(s) from [Anthropic](https://console.anthropic.com/) and/or [OpenAI](https://platform.openai.com/api-keys)
+- **OpenAI API Key** ([Platform API Keys](https://platform.openai.com/api-keys))
 
-### 1. Clone the repository
-
+### 1. Clone & Install
 ```bash
-git clone https://github.com/your-username/ai-chatbot.git
+git clone https://github.com/muthukumar-sde/ai-chatbot.git
 cd ai-chatbot
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Set up environment variables
-
-Create a `.env.local` file in the root directory:
-
+### 2. Environment Variables
+Create a `.env.local` file in the root folder:
 ```env
-# Anthropic (Claude)
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-
-# OpenAI (optional)
 OPENAI_API_KEY=your_openai_api_key_here
+DATABASE_URL="file:./dev.db"
 ```
 
----
+### 3. Database Setup & Seed
+```bash
+npx prisma db push
+node prisma/seed.js
+```
 
-## ▶️ Running the App
-
-### Development
-
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Production
-
-```bash
-npm run build
-npm run start
-```
+Open [http://localhost:3000](http://localhost:3000) to start testing.
 
 ---
 
-## 🧹 Utility Scripts
+## 📜 Database Schema Summary
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start the development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start the production server |
-| `npm run lint` | Run ESLint |
-| `npm run clean` | Remove `.next`, `.swc`, and `node_modules` |
-| `npm run fresh` | Clean install and restart dev server |
+- **`Property`**: Stores property ID, title, city, location, price, type, bedrooms, amenities, status, and image URL.
+- **`UserMemory`**: Stores thread ID, user name, phone, email, search preferences, and search locations.
+- **`Favorite`**: Links thread ID / user key to bookmarked properties.
+- **`SiteVisit`**: Stores visitor bookings including property ID, date, time, customer contact info, and confirmation status.
 
 ---
 
-## 📄 RAG (Retrieval-Augmented Generation)
+## 📄 License
 
-This project supports PDF-based knowledge ingestion:
-
-1. Place PDF files in `public/` or upload via the UI
-2. Files are parsed with `pdf-parse`
-3. Text is chunked via `RecursiveCharacterTextSplitter`
-4. Chunks are embedded and stored in a LangChain vector store
-5. The LangGraph agent retrieves relevant context before responding
-
-> **Note:** The vector store must be initialized before RAG queries will work. See `lib/rag/` for setup details.
-
----
-
-## 🧠 Agent Flow
-
-```
-User message
-    │
-    ▼
-LangGraph router
-    │
-    ├──► Tool invocation (search, RAG, custom tools)
-    │         │
-    │         ▼
-    │    Tool results
-    │         │
-    └──► LLM response generation
-              │
-              ▼
-         Streamed reply
-```
-
----
-
-## 🛠️ Key Dependencies
-
-| Package | Purpose |
-|---|---|
-| `@langchain/anthropic` | Claude model integration |
-| `@langchain/openai` | OpenAI GPT integration |
-| `@langchain/langgraph` | Stateful agent graph |
-| `@langchain/community` | Community tools & integrations |
-| `@langchain/textsplitters` | Document chunking |
-| `pdf-parse` | PDF text extraction |
-
----
-
-## 📌 Notes
-
-- Node.js 18+ is required for Next.js 16 and the LangChain ecosystem
-- For RAG to work, the vector store must be populated before queries
-- API keys must be set in `.env.local` before starting the dev server
-- Use `npm run fresh` to fully reset your local environment if you hit dependency issues
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'Add my feature'`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Open a Pull Request
-
----
-
-## 📜 License
-
-This project is licensed under the [MIT License](./LICENSE).
+Distributed under the [MIT License](./LICENSE).
 
 ---
 
 <div align="center">
-
-Built with ❤️ using [Next.js](https://nextjs.org/) + [LangChain](https://langchain.com/)
-
+Developed with ❤️ for <b>MK Properties</b>
 </div>

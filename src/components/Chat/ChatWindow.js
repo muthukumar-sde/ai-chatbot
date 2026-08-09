@@ -1,183 +1,212 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, MapPin, Building, Home, Briefcase, User, Bot, Moon, Sun, Mic, Square, Check, X } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import { useTheme } from "@/lib/ThemeContext";
 import { reverseGeocode } from "@/lib/agent/geocode";
-import remarkGfm from "remark-gfm";
+
+import ChatHeader from "./ChatHeader";
+import MessageList from "./MessageList";
+import QuickSuggestions from "./QuickSuggestions";
+import ChatInput from "./ChatInput";
+import FavoritesModal from "./FavoritesModal";
+import BookingModal from "./BookingModal";
 
 export default function ChatWindow() {
-  const { theme, toggleTheme, mounted } = useTheme();
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content: "Hello! I am your Real Estate Assistant. How can I help you find your dream property today?",
-    },
-  ]);
+  const { mounted } = useTheme();
+  const INITIAL_WELCOME = {
+    role: "assistant",
+    content:
+      "👋 **Welcome to MK Properties!** I am your Real Estate Assistant.\n\nI can help you discover verified properties across Tamil Nadu, compare listings, check nearby amenities, and guide you through home loans & legal processes.\n\nTo get started, **may I know your name** and whether you are looking to **buy** or **rent** a property? *(Or tap one of the quick options below!)*",
+  };
+
+  const QUICK_SUGGESTIONS = [
+    { label: "🏢 2BHK Buy in Chennai", query: "Show me 2 BHK apartments to buy in Chennai under 70 lakhs" },
+    { label: "🔑 Rent under ₹20k in Coimbatore", query: "Show me rental houses in Coimbatore under 20000 per month" },
+    { label: "✨ Cheapest Villas in Madurai", query: "Show me the cheapest villas in Madurai" },
+    { label: "📍 Near Me Properties", query: "Find properties near my current location" },
+    { label: "📋 Home Loan & Documents FAQ", query: "What documents are required to buy a property and how to get a home loan?" },
+  ];
+
+  const [messages, setMessages] = useState(() => {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem("mk_chat_messages");
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {
+          console.error("Failed to parse cached chat messages", e);
+        }
+      }
+    }
+    return [INITIAL_WELCOME];
+  });
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
-  const [locationCity, setLocationCity] = useState(""); // Display city name
-  const [locationStatus, setLocationStatus] = useState(""); // "granted", "denied", "pending"
+  const [locationCity, setLocationCity] = useState("");
+  const [locationStatus, setLocationStatus] = useState("");
   const [threadId, setThreadId] = useState(null);
   const [userMemory, setUserMemory] = useState({});
   const [isRecording, setIsRecording] = useState(false);
+  const [isTtsEnabled, setIsTtsEnabled] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+
+  const [bookingProp, setBookingProp] = useState(null);
+  const [bookingForm, setBookingForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    date: "",
+    time: "10:30 AM",
+  });
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const isCancelledRef = useRef(false);
   const messagesEndRef = useRef(null);
-  const inputRef = useRef("");
 
+  // Sync messages to localStorage
   useEffect(() => {
-    inputRef.current = input;
-  }, [input]);
-
-  const handleSend = () => {
-    if (input.trim()) {
-      submitMessage(input);
+    if (typeof window !== "undefined" && messages && messages.length > 0) {
+      localStorage.setItem("mk_chat_messages", JSON.stringify(messages));
     }
+  }, [messages]);
+
+  const scrollToBottom = (behavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior, block: "end" });
   };
 
-  // ✅ Initialize thread ID only in browser (after mount)
+  // Scroll to bottom on new message or loading change
   useEffect(() => {
-    let id = sessionStorage.getItem("thread_id");
+    scrollToBottom("smooth");
+    const timer = setTimeout(() => scrollToBottom("smooth"), 100);
+    return () => clearTimeout(timer);
+  }, [messages, loading]);
+
+  // Ensure initial mount / refresh scrolls directly to bottom of restored chat
+  useEffect(() => {
+    if (mounted) {
+      scrollToBottom("auto");
+      const timer = setTimeout(() => scrollToBottom("smooth"), 250);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted]);
+
+  // Initialize session & geolocation
+  useEffect(() => {
+    let id = localStorage.getItem("thread_id");
     if (!id) {
       id = crypto.randomUUID();
-      sessionStorage.setItem("thread_id", id);
+      localStorage.setItem("thread_id", id);
     }
     setThreadId(id);
 
-    // Initialize user memory from session
-    const memoryCache = sessionStorage.getItem("userMemory");
+    let uk = localStorage.getItem("mk_user_key");
+    if (!uk) {
+      uk = "user_" + crypto.randomUUID();
+      localStorage.setItem("mk_user_key", uk);
+    }
+    fetchFavorites(uk);
+
+    const memoryCache = localStorage.getItem("userMemory");
     if (memoryCache) {
       try {
         setUserMemory(JSON.parse(memoryCache));
       } catch (e) {
-        console.error("Failed to parse user session memory", e);
+        console.error("Failed to parse user memory", e);
       }
     }
-  }, []);
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        audioChunksRef.current = [];
-        
-        stream.getTracks().forEach(track => track.stop());
-        setIsRecording(false);
-        
-        if (isCancelledRef.current) {
-          return; // Discard audio
-        }
-        
-        setLoading(true);
-        let transcriptionSuccess = false;
-        let transcribedText = "";
-
-        try {
-          const formData = new FormData();
-          formData.append("file", audioBlob, "recording.webm");
-          
-          const response = await fetch("/api/voice", {
-            method: "POST",
-            body: formData,
-          });
-          
-          const data = await response.json();
-          if (data.text) {
-            transcribedText = data.text;
-            transcriptionSuccess = true;
-          } else if (data.error) {
-            console.error("Transcription error:", data.error);
-          }
-        } catch (err) {
-          console.error("Error sending audio to API:", err);
-        }
-
-        if (transcriptionSuccess) {
-          const finalText = inputRef.current ? inputRef.current + " " + transcribedText : transcribedText;
-          setInput(finalText);
-          setLoading(false);
-        } else {
-          setLoading(false);
-        }
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Error accessing microphone:", err);
-      alert("Could not access microphone. Please check permissions.");
-    }
-  };
-
-  const cancelRecording = () => {
-    isCancelledRef.current = true;
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-      mediaRecorderRef.current.stop();
-    }
-  };
-
-  const confirmRecording = () => {
-    isCancelledRef.current = false;
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-      mediaRecorderRef.current.stop();
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    // Get user location for "nearest" feature
-    if (navigator.geolocation) {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
       setLocationStatus("pending");
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const placeName = await reverseGeocode(lat, lon);
-          setUserLocation({ lat, lon, city: placeName });
-          console.log("✅ Location granted:", lat, lon);
-          // Reverse geocode to get city name (consistent headers)
-
+          const loc = { lat: position.coords.latitude, lon: position.coords.longitude };
+          setUserLocation(loc);
+          const placeName = await reverseGeocode(loc.lat, loc.lon);
           setLocationCity(placeName || "Location detected");
           setLocationStatus("granted");
         },
-        (error) => {
-          setLocationStatus("denied");
-          console.warn("⚠️ Location access denied:", error.message);
-        }
+        () => setLocationStatus("denied")
       );
     } else {
       setLocationStatus("denied");
-      console.warn("❌ Geolocation not supported by browser");
     }
   }, []);
 
-  const submitMessage = async (textToSubmit) => {
-    if (!textToSubmit.trim()) {
-      setLoading(false);
-      return;
+  const fetchFavorites = async (tid) => {
+    if (!tid) return;
+    try {
+      const res = await fetch(`/api/favorites?threadId=${tid}`);
+      const data = await res.json();
+      if (data.favorites) setFavorites(data.favorites);
+    } catch (e) {
+      console.error("Failed to fetch favorites", e);
     }
+  };
+
+  const toggleFavoriteProperty = async (propertyId) => {
+    const targetKey = (typeof window !== "undefined" && localStorage.getItem("mk_user_key")) || threadId;
+    if (!targetKey) return;
+    try {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId: targetKey, propertyId }),
+      });
+      const data = await res.json();
+      if (data.action) fetchFavorites(targetKey);
+    } catch (e) {
+      console.error("Failed to toggle favorite", e);
+    }
+  };
+
+  const speakText = (text) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/[*#_`~]|https?:\/\/\S+/g, "").trim();
+    if (!cleanText) return;
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleTts = () => {
+    if (isTtsEnabled) {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      setIsTtsEnabled(false);
+    } else {
+      setIsTtsEnabled(true);
+      speakText("Voice response enabled.");
+    }
+  };
+
+  const handleNewChat = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    const newId = crypto.randomUUID();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("thread_id", newId);
+      localStorage.removeItem("userMemory");
+      localStorage.removeItem("mk_chat_messages");
+    }
+    setThreadId(newId);
+    setUserMemory({});
+    setMessages([INITIAL_WELCOME]);
+    const uk = localStorage.getItem("mk_user_key");
+    if (uk) fetchFavorites(uk);
+  };
+
+  const submitMessage = async (textToSubmit) => {
+    if (!textToSubmit.trim()) return;
 
     const userMsg = { role: "user", content: textToSubmit };
     setMessages((prev) => [...prev, userMsg]);
@@ -191,8 +220,8 @@ export default function ChatWindow() {
         body: JSON.stringify({
           messages: [...messages, userMsg],
           userLocation,
-          threadId, // Send thread ID to maintain conversation context
-          userMemory, // Send frontend session memory
+          threadId,
+          userMemory,
         }),
       });
 
@@ -201,10 +230,11 @@ export default function ChatWindow() {
 
       if (data.userMemory) {
         setUserMemory(data.userMemory);
-        sessionStorage.setItem("userMemory", JSON.stringify(data.userMemory));
+        localStorage.setItem("userMemory", JSON.stringify(data.userMemory));
       }
 
       setMessages((prev) => [...prev, data]);
+      if (isTtsEnabled && data.content) speakText(data.content);
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) => [
@@ -216,129 +246,185 @@ export default function ChatWindow() {
     }
   };
 
-  if (!mounted) {
-    return null;
-  }
+  const openBookingModal = (id, name) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().split("T")[0];
+
+    setBookingProp({ id, name });
+    setBookingForm({
+      name: userMemory.name || "",
+      phone: userMemory.phone || "",
+      email: userMemory.email || "",
+      date: dateStr,
+      time: "10:30 AM",
+    });
+  };
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    if (!bookingProp || !bookingForm.name || !bookingForm.phone || !bookingForm.date || !bookingForm.time) {
+      alert("Please fill in your Name, Phone Number, Date, and Time.");
+      return;
+    }
+
+    setBookingSubmitting(true);
+    try {
+      const res = await fetch("/api/site-visits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          propertyId: bookingProp.id,
+          userName: bookingForm.name,
+          userPhone: bookingForm.phone,
+          userEmail: bookingForm.email,
+          visitDate: bookingForm.date,
+          visitTime: bookingForm.time,
+          threadId,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const updatedMem = {
+        ...userMemory,
+        name: bookingForm.name,
+        phone: bookingForm.phone,
+        email: bookingForm.email || userMemory.email,
+      };
+      setUserMemory(updatedMem);
+      localStorage.setItem("userMemory", JSON.stringify(updatedMem));
+
+      setBookingProp(null);
+
+      const confirmMsg = {
+        role: "assistant",
+        content: `🎉 **Site Visit Confirmed!**\n\nYour site visit for **${data.propertyName}** (${data.location}, ${data.city}) has been scheduled for **${bookingForm.date}** at **${bookingForm.time}**.\n\nOur property manager will contact you at **${bookingForm.phone}** prior to your visit. Confirmation ID: \`${data.visitId.slice(0, 8)}\`.`,
+      };
+      setMessages((prev) => [...prev, confirmMsg]);
+      if (isTtsEnabled) speakText(`Site visit confirmed for ${data.propertyName} on ${bookingForm.date}`);
+    } catch (err) {
+      console.error("Booking error:", err);
+      alert("Failed to schedule site visit: " + err.message);
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        audioChunksRef.current = [];
+        stream.getTracks().forEach((track) => track.stop());
+        setIsRecording(false);
+
+        if (isCancelledRef.current) return;
+
+        setLoading(true);
+        try {
+          const formData = new FormData();
+          formData.append("file", audioBlob, "speech.webm");
+          const response = await fetch("/api/voice", { method: "POST", body: formData });
+          const data = await response.json();
+          if (data.text) submitMessage(data.text);
+        } catch (err) {
+          console.error("Voice transcription failed", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      isCancelledRef.current = false;
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (e) {
+      console.error("Microphone access failed", e);
+      alert("Could not access microphone.");
+    }
+  };
+
+  const cancelRecording = () => {
+    isCancelledRef.current = true;
+    if (mediaRecorderRef.current && isRecording) mediaRecorderRef.current.stop();
+  };
+
+  const confirmRecording = () => {
+    isCancelledRef.current = false;
+    if (mediaRecorderRef.current && isRecording) mediaRecorderRef.current.stop();
+  };
+
+  if (!mounted) return null;
 
   return (
     <div className="chat-container">
-      <div className="chat-header">
-        <div className="header-left">
-          <Building className="text-sky-400" size={32} />
-          <div className="header-content">
-            <h1>Property Assistant</h1>
-            <div className="header-subtitle">
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
-                Real-time Real Estate Expert
-              </p>
-              {locationStatus === "granted" && locationCity && (
-                <span className="location-badge granted">
-                  <MapPin size={12} /> {locationCity}
-                </span>
-              )}
-              {locationStatus === "denied" && (
-                <span className="location-badge denied">
-                  <MapPin size={12} /> Location OFF
-                </span>
-              )}
-              {locationStatus === "pending" && (
-                <span className="location-badge pending">
-                  📍 Getting location...
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <button
-          className="theme-toggle"
-          onClick={toggleTheme}
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
-      </div>
+      <ChatHeader
+        userMemory={userMemory}
+        locationStatus={locationStatus}
+        locationCity={locationCity}
+        favoritesCount={favorites.length}
+        onOpenFavorites={() => setShowFavoritesModal(true)}
+        isTtsEnabled={isTtsEnabled}
+        onToggleTts={toggleTts}
+        onNewChat={handleNewChat}
+      />
 
-      <div className="messages-list">
-        {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.role}`}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontSize: '0.8rem', opacity: 0.7 }}>
-              {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
-              <span>{msg.role === 'user' ? 'You' : 'Assistant'}</span>
-            </div>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                table: ({ node, ...props }) => (
-                  <div style={{ overflowX: "auto", margin: "8px 0" }}>
-                    <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "0.85rem" }} {...props} />
-                  </div>
-                ),
-                th: ({ node, ...props }) => (
-                  <th style={{ border: "1px solid var(--border-color, #444)", padding: "8px 12px", background: "var(--table-header-bg, #1e293b)", color: "#ffffff", textAlign: "left", whiteSpace: "nowrap" }} {...props} />
-                ),
-                td: ({ node, ...props }) => (
-                  <td style={{ border: "1px solid var(--border-color, #444)", padding: "7px 12px", color: "var(--text-primary, #cbd5e1)" }} {...props} />
-                ),
-                tr: ({ node, ...props }) => (
-                  <tr style={{ background: "var(--table-row-bg, transparent)" }} {...props} />
-                ),
-              }}
-            >{msg.content}</ReactMarkdown>
-          </div>
-        ))}
-        {loading && (
-          <div className="message assistant" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontStyle: 'italic', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Searching</span>
-            <div className="typing-indicator">
-              <div className="typing-dot"></div>
-              <div className="typing-dot"></div>
-              <div className="typing-dot"></div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+      <MessageList
+        messages={messages}
+        loading={loading}
+        userMemory={userMemory}
+        favorites={favorites}
+        onToggleFavorite={toggleFavoriteProperty}
+        onOpenBookingModal={openBookingModal}
+        messagesEndRef={messagesEndRef}
+      />
 
-      <div className="input-area">
-        <button
-          className={`mic-button ${isRecording ? 'is-recording' : ''}`}
-          onClick={isRecording ? cancelRecording : startRecording}
-          disabled={loading && !isRecording}
-          title={isRecording ? "Cancel recording" : "Start recording"}
-        >
-          {isRecording ? <X size={20} /> : <Mic size={20} />}
-        </button>
-        
-        <div className="input-wrapper">
-          <input
-            className={`chat-input ${isRecording ? 'is-recording' : ''}`}
-            value={isRecording ? "" : input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && !isRecording && handleSend()}
-            placeholder={isRecording ? "Listening..." : "e.g., Show me 1BHK houses in Coimbatore"}
-            disabled={loading || isRecording}
-          />
-          {isRecording && (
-            <div className="integrated-wave">
-                <div className="wave-bar"></div>
-                <div className="wave-bar"></div>
-                <div className="wave-bar"></div>
-                <div className="wave-bar"></div>
-                <div className="wave-bar"></div>
-            </div>
-          )}
-        </div>
+      <QuickSuggestions
+        suggestions={QUICK_SUGGESTIONS}
+        onSelectSuggestion={submitMessage}
+        disabled={loading || isRecording}
+      />
 
-        <button 
-          className={`send-button ${isRecording ? 'is-recording' : ''}`}
-          onClick={isRecording ? confirmRecording : handleSend} 
-          disabled={(loading && !isRecording) || (!isRecording && !input.trim())}
-          title={isRecording ? "Stop & Send" : "Send message"}
-        >
-          {isRecording ? <Check size={20} /> : <Send size={20} />}
-        </button>
-      </div>
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        loading={loading}
+        isRecording={isRecording}
+        onStartRecording={startRecording}
+        onCancelRecording={cancelRecording}
+        onConfirmRecording={confirmRecording}
+        onSend={() => submitMessage(input)}
+      />
+
+      {showFavoritesModal && (
+        <FavoritesModal
+          favorites={favorites}
+          onClose={() => setShowFavoritesModal(false)}
+          onOpenBookingModal={openBookingModal}
+          onRemoveFavorite={toggleFavoriteProperty}
+        />
+      )}
+
+      {bookingProp && (
+        <BookingModal
+          bookingProp={bookingProp}
+          bookingForm={bookingForm}
+          setBookingForm={setBookingForm}
+          bookingSubmitting={bookingSubmitting}
+          onClose={() => setBookingProp(null)}
+          onSubmit={handleBookingSubmit}
+        />
+      )}
     </div>
   );
 }
